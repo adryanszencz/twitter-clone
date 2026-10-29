@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Configurações{% endblock %}
+{% block content %}
+  <h1 class="page-title">Configurações</h1>
+
+  <form class="card" id="profile-form">
+    <h2 class="page-title" style="font-size:17px">Perfil</h2>
+    <p class="muted" style="margin-bottom:12px">Altere só o que quiser: os campos em branco ficam como estão.</p>
+    <div class="field" style="display:flex;gap:14px;align-items:center">
+      <div id="current-avatar"></div>
+      <div style="flex:1">
+        <label for="avatar">Foto de perfil</label>
+        <input id="avatar" name="avatar" type="file" accept="image/*">
+      </div>
+    </div>
+    <div class="field">
+      <label for="name">Nome</label>
+      <input id="name" name="name" maxlength="50">
+    </div>
+    <div class="field">
+      <label for="bio">Bio</label>
+      <textarea id="bio" name="bio" maxlength="160"></textarea>
+    </div>
+    <button class="btn" type="submit">Salvar perfil</button>
+    <p class="success" id="profile-ok"></p>
+    <p class="error" id="profile-error"></p>
+  </form>
+
+  <form class="card" id="password-form">
+    <h2 class="page-title" style="font-size:17px">Senha</h2>
+    <div class="field">
+      <label for="current_password">Senha atual</label>
+      <input id="current_password" name="current_password" type="password" autocomplete="current-password" required>
+    </div>
+    <div class="field">
+      <label for="new_password">Nova senha</label>
+      <input id="new_password" name="new_password" type="password" autocomplete="new-password" required>
+    </div>
+    <button class="btn" type="submit">Trocar senha</button>
+    <p class="success" id="password-ok"></p>
+    <p class="error" id="password-error"></p>
+  </form>
+{% endblock %}
+{% block script %}
+  <script>
+    const { api, avatar } = Piu;
+    let original = {};
+
+    function showUser(user) {
+      original = user;
+      document.getElementById("name").value = user.name;
+      document.getElementById("bio").value = user.bio;
+      document.getElementById("current-avatar").replaceChildren(avatar(user, true));
+    }
+
+    if (Piu.token()) api("/users/me/").then(showUser);
+
+    document.getElementById("profile-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const ok = document.getElementById("profile-ok");
+      const err = document.getElementById("profile-error");
+      ok.textContent = err.textContent = "";
+      // manda só o que mudou: nenhum campo é obrigatório
+      const form = new FormData();
+      const name = document.getElementById("name").value.trim();
+      const bio = document.getElementById("bio").value.trim();
+      const file = document.getElementById("avatar").files[0];
+      if (name !== original.name) form.append("name", name);
+      if (bio !== original.bio) form.append("bio", bio);
+      if (file) form.append("avatar", file);
+      if (![...form.keys()].length) {
+        ok.textContent = "Nada para salvar.";
+        return;
+      }
+      try {
+        const user = await api("/users/me/", { method: "PATCH", form });
+        showUser(user);
+        Piu.saveSession({ token: Piu.token(), user });
+        Piu.fillSidebar();
+        document.getElementById("avatar").value = "";
+        ok.textContent = "Perfil atualizado!";
+      } catch (error) {
+        err.textContent = error.message;
+      }
+    });
+
+    document.getElementById("password-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const ok = document.getElementById("password-ok");
+      const err = document.getElementById("password-error");
+      ok.textContent = err.textContent = "";
+      try {
+        const session = await api("/users/me/password/", { method: "POST", body: Object.fromEntries(new FormData(event.target)) });
+        Piu.saveSession(session);
+        event.target.reset();
+        ok.textContent = "Senha alterada!";
+      } catch (error) {
+        err.textContent = error.message;
+      }
+    });
+  </script>
+{% endblock %}

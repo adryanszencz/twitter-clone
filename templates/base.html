@@ -1,0 +1,32 @@
+{% load static %}<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Piu{% endblock %} · Piu</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <script src="{% static 'js/app.js' %}"></script>
+</head>
+<body>
+{% block body %}
+  <div class="layout">
+    <nav class="sidebar">
+      <a class="brand" href="/">piu<span>.</span></a>
+      <a class="nav-link {% if active == 'feed' %}active{% endif %}" href="/">🏠 Feed</a>
+      <a class="nav-link {% if active == 'people' %}active{% endif %}" href="/pessoas/">🔎 Pessoas</a>
+      <a class="nav-link {% if active == 'profile' %}active{% endif %}" id="nav-profile" href="#">👤 Perfil</a>
+      <a class="nav-link {% if active == 'settings' %}active{% endif %}" href="/configuracoes/">⚙️ Configurações</a>
+      <a class="nav-link" id="logout" href="#">🚪 Sair</a>
+      <div class="me" id="me"></div>
+    </nav>
+    <main>
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+  <script>
+    if (Piu.requireLogin()) Piu.fillSidebar();
+  </script>
+  {% block script %}{% endblock %}
+{% endblock %}
+</body>
+</html>

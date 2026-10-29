@@ -1,0 +1,93 @@
+:root {
+  --bg: #f5f7fa;
+  --card: #ffffff;
+  --text: #16202b;
+  --muted: #66758a;
+  --line: #e3e8ef;
+  --primary: #1f8f6a;
+  --primary-dark: #17734f;
+  --danger: #c8384a;
+  --like: #e0245e;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f141a;
+    --card: #17202a;
+    --text: #e8eef4;
+    --muted: #8d9bab;
+    --line: #26323f;
+  }
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font: 15px/1.5 "Segoe UI", Roboto, Arial, sans-serif; }
+a { color: var(--primary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+img { display: block; }
+
+.layout { display: grid; grid-template-columns: 220px minmax(0, 600px); gap: 24px; max-width: 860px; margin: 0 auto; padding: 16px; }
+.sidebar { position: sticky; top: 16px; align-self: start; display: flex; flex-direction: column; gap: 6px; }
+.brand { font-size: 26px; font-weight: 800; color: var(--primary); margin-bottom: 12px; }
+.brand span { color: var(--text); }
+.nav-link { padding: 10px 14px; border-radius: 999px; color: var(--text); font-weight: 600; }
+.nav-link:hover { background: var(--card); text-decoration: none; }
+.nav-link.active { background: var(--card); color: var(--primary); }
+.me { margin-top: 16px; display: flex; gap: 10px; align-items: center; font-size: 14px; }
+
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+.page-title { font-size: 20px; font-weight: 800; margin-bottom: 12px; }
+.muted { color: var(--muted); font-size: 13px; }
+.empty { text-align: center; color: var(--muted); padding: 24px; }
+
+.avatar { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; background: var(--line); flex-shrink: 0; }
+.avatar.big { width: 88px; height: 88px; }
+.avatar-fallback { display: flex; align-items: center; justify-content: center; font-weight: 800; color: #fff; background: var(--primary); }
+
+.btn { border: 0; border-radius: 999px; padding: 8px 18px; font-weight: 700; cursor: pointer; background: var(--primary); color: #fff; font-size: 14px; }
+.btn:hover { background: var(--primary-dark); }
+.btn:disabled { opacity: .5; cursor: default; }
+.btn.outline { background: transparent; color: var(--text); border: 1px solid var(--line); }
+.btn.outline:hover { border-color: var(--danger); color: var(--danger); }
+.btn.link { background: none; color: var(--muted); padding: 4px 8px; font-weight: 600; }
+.btn.link:hover { color: var(--primary); }
+
+form .field { margin-bottom: 12px; }
+label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+input, textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--text); font: inherit; }
+textarea { resize: vertical; min-height: 70px; }
+.error { color: var(--danger); font-size: 13px; margin-top: 6px; }
+.success { color: var(--primary); font-size: 13px; margin-top: 6px; }
+
+.compose { display: flex; gap: 12px; }
+.compose textarea { border: 0; background: transparent; font-size: 17px; min-height: 60px; }
+.compose-footer { display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 8px; }
+
+.post { display: flex; gap: 12px; }
+.post-body { flex: 1; min-width: 0; }
+.post-head { display: flex; gap: 6px; align-items: baseline; flex-wrap: wrap; }
+.post-head strong { color: var(--text); }
+.post-content { white-space: pre-wrap; word-wrap: break-word; margin: 4px 0 8px; }
+.post-actions { display: flex; gap: 18px; }
+.action { background: none; border: 0; color: var(--muted); cursor: pointer; font: inherit; font-size: 13px; display: flex; gap: 6px; align-items: center; }
+.action:hover { color: var(--primary); }
+.action.liked { color: var(--like); }
+
+.profile-head { display: flex; gap: 16px; align-items: center; }
+.profile-head .info { flex: 1; }
+.profile-name { font-size: 20px; font-weight: 800; }
+.stats { display: flex; gap: 16px; margin-top: 8px; font-size: 14px; }
+.stats a { color: var(--text); }
+
+.person { display: flex; gap: 12px; align-items: center; }
+.person .info { flex: 1; min-width: 0; }
+
+.auth { max-width: 380px; margin: 60px auto; }
+.auth .brand { text-align: center; font-size: 34px; }
+
+@media (max-width: 720px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar { position: static; flex-direction: row; flex-wrap: wrap; align-items: center; }
+  .brand { margin: 0 12px 0 0; }
+  .me { display: none; }
+}

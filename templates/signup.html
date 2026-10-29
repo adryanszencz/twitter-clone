@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Cadastro{% endblock %}
+{% block body %}
+  <div class="auth">
+    <div class="brand">piu<span>.</span></div>
+    <div class="card">
+      <h1 class="page-title">Criar conta</h1>
+      <form id="signup-form">
+        <div class="field">
+          <label for="name">Nome</label>
+          <input id="name" name="name" autocomplete="name">
+        </div>
+        <div class="field">
+          <label for="username">Usuário</label>
+          <input id="username" name="username" autocomplete="username" required>
+        </div>
+        <div class="field">
+          <label for="email">E-mail</label>
+          <input id="email" name="email" type="email" autocomplete="email">
+        </div>
+        <div class="field">
+          <label for="password">Senha</label>
+          <input id="password" name="password" type="password" autocomplete="new-password" required>
+          <p class="muted">Pelo menos 8 caracteres, sem ser só números.</p>
+        </div>
+        <button class="btn" type="submit" style="width:100%">Criar conta</button>
+        <p class="error" id="error"></p>
+      </form>
+    </div>
+    <p class="muted" style="text-align:center">Já tem conta? <a href="/login/">Entrar</a></p>
+  </div>
+  <script>
+    if (Piu.token()) window.location.href = "/";
+    document.getElementById("signup-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const form = Object.fromEntries(new FormData(event.target));
+      try {
+        Piu.saveSession(await Piu.api("/auth/register/", { method: "POST", body: form }));
+        window.location.href = "/pessoas/";
+      } catch (error) {
+        document.getElementById("error").textContent = error.message;
+      }
+    });
+  </script>
+{% endblock %}

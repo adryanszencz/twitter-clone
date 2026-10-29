@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Feed{% endblock %}
+{% block content %}
+  <h1 class="page-title">Feed</h1>
+  <form class="card" id="compose">
+    <div class="compose">
+      <div id="compose-avatar"></div>
+      <textarea id="content" maxlength="280" placeholder="O que está acontecendo?" aria-label="Novo post"></textarea>
+    </div>
+    <div class="compose-footer">
+      <span class="muted" id="counter">280</span>
+      <button class="btn" type="submit" id="publish" disabled>Piar</button>
+    </div>
+    <p class="error" id="error"></p>
+  </form>
+  <p class="muted" id="hint" style="margin-bottom:12px">O feed mostra os posts de quem você segue. <a href="/pessoas/">Encontre pessoas</a>.</p>
+  <section id="feed"></section>
+{% endblock %}
+{% block script %}
+  <script>
+    const textarea = document.getElementById("content");
+    const publish = document.getElementById("publish");
+    const counter = document.getElementById("counter");
+    const me = Piu.currentUser();
+    if (me) document.getElementById("compose-avatar").append(Piu.avatar(me));
+
+    textarea.addEventListener("input", () => {
+      const restante = 280 - textarea.value.length;
+      counter.textContent = restante;
+      publish.disabled = !textarea.value.trim();
+    });
+
+    document.getElementById("compose").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      publish.disabled = true;
+      try {
+        const post = await Piu.api("/posts/", { method: "POST", body: { content: textarea.value } });
+        textarea.value = "";
+        counter.textContent = 280;
+        document.getElementById("error").textContent = "";
+        // o feed só mostra quem você segue; o post novo aparece aqui no topo como confirmação
+        document.getElementById("feed").prepend(Piu.postCard(post));
+      } catch (error) {
+        document.getElementById("error").textContent = error.message;
+        publish.disabled = false;
+      }
+    });
+
+    if (Piu.token()) {
+      Piu.paginatedList(document.getElementById("feed"), "/feed/", (post) => Piu.postCard(post),
+        "Nada por aqui ainda. Siga algumas pessoas para ver os posts delas.");
+    }
+  </script>
+{% endblock %}

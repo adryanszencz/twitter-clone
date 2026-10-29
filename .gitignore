@@ -5,3 +5,5 @@ db.sqlite3
 media/
 staticfiles/
 .env
+e2e.sqlite3
+media-e2e/
