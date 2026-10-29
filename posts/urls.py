@@ -5,6 +5,7 @@ from posts import api
 
 router = routers.SimpleRouter()
 router.register(r"posts", api.PostViewSet, basename="post")
+router.register(r"comments", api.CommentViewSet, basename="comment")
 
 urlpatterns = [
     path("feed/", api.FeedView.as_view(), name="api-feed"),
