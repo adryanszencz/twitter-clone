@@ -105,3 +105,38 @@ class PasswordChangeTest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("new_password", response.json())
+
+
+class UsernameTest(APITestCase):
+    def setUp(self):
+        self.user = UserFactory(username="adryanszenczuk@gmail.com")
+        self.client.force_authenticate(self.user)
+
+    def test_trocar_o_usuario(self):
+        response = self.client.patch(reverse("api-me"), {"username": "adryan"}, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.username, "adryan")
+        self.assertTrue(self.user.check_password(PASSWORD))
+
+    def test_usuario_com_arroba_e_recusado(self):
+        response = self.client.patch(reverse("api-me"), {"username": "outro@email.com"}, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("username", response.json())
+
+    def test_usuario_ja_usado_e_recusado(self):
+        UserFactory(username="ana")
+
+        response = self.client.patch(reverse("api-me"), {"username": "ana"}, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_cadastro_nao_aceita_email_como_usuario(self):
+        self.client.force_authenticate(None)
+
+        response = self.client.post(reverse("api-register"), {"username": "a@b.com", "password": PASSWORD})
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("username", response.json())

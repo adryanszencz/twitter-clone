@@ -14,6 +14,11 @@
       </div>
     </div>
     <div class="field">
+      <label for="username">Usuário (@)</label>
+      <input id="username" name="username" maxlength="30">
+      <p class="muted">Aparece no seu perfil e no endereço dele. Letras, números, _ ou .</p>
+    </div>
+    <div class="field">
       <label for="name">Nome</label>
       <input id="name" name="name" maxlength="50">
     </div>
@@ -48,6 +53,7 @@
 
     function showUser(user) {
       original = user;
+      document.getElementById("username").value = user.username;
       document.getElementById("name").value = user.name;
       document.getElementById("bio").value = user.bio;
       document.getElementById("current-avatar").replaceChildren(avatar(user, true));
@@ -62,9 +68,11 @@
       ok.textContent = err.textContent = "";
       // manda só o que mudou: nenhum campo é obrigatório
       const form = new FormData();
+      const username = document.getElementById("username").value.trim();
       const name = document.getElementById("name").value.trim();
       const bio = document.getElementById("bio").value.trim();
       const file = document.getElementById("avatar").files[0];
+      if (username && username !== original.username) form.append("username", username);
       if (name !== original.name) form.append("name", name);
       if (bio !== original.bio) form.append("bio", bio);
       if (file) form.append("avatar", file);

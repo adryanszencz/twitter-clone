@@ -1,7 +1,15 @@
 from django.contrib.auth import authenticate, password_validation
+from django.core.validators import RegexValidator
 from rest_framework import serializers
 
 from accounts.models import Follow, User
+
+
+# o @usuário aparece publicamente e na URL do perfil: só letras, números, "_" e "." (sem e-mail)
+username_validator = RegexValidator(
+    r"^[A-Za-z0-9_.]{3,30}$",
+    "Use de 3 a 30 caracteres: letras, números, _ ou . (sem espaços, @ ou acentos).",
+)
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -20,6 +28,10 @@ class RegisterSerializer(serializers.ModelSerializer):
         model = User
         fields = ["username", "email", "name", "password"]
         extra_kwargs = {"email": {"required": False}, "name": {"required": False}}
+
+    def validate_username(self, value):
+        username_validator(value)
+        return value
 
     def validate(self, attrs):
         user = User(username=attrs.get("username"), email=attrs.get("email", ""))
@@ -47,8 +59,17 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["name", "bio", "avatar"]
-        extra_kwargs = {"name": {"required": False}, "bio": {"required": False}, "avatar": {"required": False}}
+        fields = ["username", "name", "bio", "avatar"]
+        extra_kwargs = {
+            "username": {"required": False},
+            "name": {"required": False},
+            "bio": {"required": False},
+            "avatar": {"required": False},
+        }
+
+    def validate_username(self, value):
+        username_validator(value)
+        return value
 
 
 class PasswordChangeSerializer(serializers.Serializer):
