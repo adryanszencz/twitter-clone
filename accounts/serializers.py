@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate, password_validation
 from rest_framework import serializers
 
-from accounts.models import User
+from accounts.models import Follow, User
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -63,3 +63,22 @@ class PasswordChangeSerializer(serializers.Serializer):
     def validate_new_password(self, value):
         password_validation.validate_password(value, self.context["request"].user)
         return value
+
+
+class PublicProfileSerializer(serializers.ModelSerializer):
+    display_name = serializers.CharField(read_only=True)
+    followers_count = serializers.IntegerField(source="followers_set.count", read_only=True)
+    following_count = serializers.IntegerField(source="following_set.count", read_only=True)
+    is_following = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ["id", "username", "name", "display_name", "bio", "avatar",
+                  "followers_count", "following_count", "is_following"]
+        read_only_fields = fields
+
+    def get_is_following(self, obj):
+        request = self.context.get("request")
+        if not request or not request.user.is_authenticated:
+            return False
+        return Follow.objects.filter(follower=request.user, following=obj).exists()
