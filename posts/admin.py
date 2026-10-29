@@ -1,1 +1,5 @@
-from django.contrib import admin  # noqa: F401
+from django.contrib import admin
+
+from posts.models import Post
+
+admin.site.register(Post)
