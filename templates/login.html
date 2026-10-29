@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Entrar{% endblock %}
+{% block body %}
+  <div class="auth">
+    <div class="brand">piu<span>.</span></div>
+    <div class="card">
+      <h1 class="page-title">Entrar</h1>
+      <form id="login-form">
+        <div class="field">
+          <label for="username">Usuário</label>
+          <input id="username" name="username" autocomplete="username" required>
+        </div>
+        <div class="field">
+          <label for="password">Senha</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" required>
+        </div>
+        <button class="btn" type="submit" style="width:100%">Entrar</button>
+        <p class="error" id="error"></p>
+      </form>
+    </div>
+    <p class="muted" style="text-align:center">Ainda não tem conta? <a href="/cadastro/">Cadastre-se</a></p>
+  </div>
+  <script>
+    if (Piu.token()) window.location.href = "/";
+    document.getElementById("login-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const form = new FormData(event.target);
+      try {
+        const session = await Piu.api("/auth/login/", {
+          method: "POST",
+          body: { username: form.get("username"), password: form.get("password") },
+        });
+        Piu.saveSession(session);
+        window.location.href = "/";
+      } catch (error) {
+        document.getElementById("error").textContent = error.message;
+      }
+    });
+  </script>
+{% endblock %}

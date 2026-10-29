@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}@{{ username }}{% endblock %}
+{% block content %}
+  <section class="card" id="profile"></section>
+  <h2 class="page-title">Posts</h2>
+  <section id="posts"></section>
+{% endblock %}
+{% block script %}
+  {{ username|json_script:"page-username" }}
+  <script>
+    const username = JSON.parse(document.getElementById("page-username").textContent);
+    const { el, api, avatar } = Piu;
+
+    async function render() {
+      const user = await api(`/users/${encodeURIComponent(username)}/`);
+      const me = Piu.currentUser();
+      const isMe = me && me.username === user.username;
+      if (isMe) document.getElementById("nav-profile").classList.add("active");
+
+      let action;
+      if (isMe) {
+        action = el("a", { class: "btn outline", href: "/configuracoes/" }, "Editar perfil");
+      } else {
+        action = el("button", { class: user.is_following ? "btn outline" : "btn" }, user.is_following ? "Seguindo" : "Seguir");
+        action.addEventListener("click", async () => {
+          await api(`/users/${user.username}/follow/`, { method: user.is_following ? "DELETE" : "POST" });
+          render();
+        });
+      }
+
+      document.getElementById("profile").replaceChildren(
+        el("div", { class: "profile-head" },
+          avatar(user, true),
+          el("div", { class: "info" },
+            el("div", { class: "profile-name" }, user.display_name),
+            el("div", { class: "muted" }, `@${user.username}`),
+            user.bio ? el("p", { style: "margin-top:6px" }, user.bio) : null,
+            el("div", { class: "stats" },
+              el("a", { href: `/u/${user.username}/seguindo/` }, el("strong", {}, user.following_count), " seguindo"),
+              el("a", { href: `/u/${user.username}/seguidores/` }, el("strong", {}, user.followers_count), " seguidores"),
+            ),
+          ),
+          action,
+        ),
+      );
+    }
+
+    if (Piu.token()) {
+      render().catch(() => {
+        document.getElementById("profile").replaceChildren(el("p", { class: "empty" }, "Usuário não encontrado."));
+      });
+      Piu.paginatedList(document.getElementById("posts"), `/users/${encodeURIComponent(username)}/posts/`,
+        (post) => Piu.postCard(post), "Nenhum post ainda.");
+    }
+  </script>
+{% endblock %}

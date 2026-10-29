@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}{{ heading }}{% endblock %}
+{% block content %}
+  <h1 class="page-title">{{ heading }}</h1>
+  {% if mode == "search" %}
+    <form class="card" id="search-form">
+      <input id="search" placeholder="Buscar por nome ou @usuário" aria-label="Buscar pessoas">
+    </form>
+  {% else %}
+    <p class="muted" style="margin-bottom:12px"><a href="/u/{{ username }}/">← voltar ao perfil de @{{ username }}</a></p>
+  {% endif %}
+  <section id="people"></section>
+{% endblock %}
+{% block script %}
+  {{ mode|json_script:"page-mode" }}
+  {{ username|json_script:"page-username" }}
+  <script>
+    const mode = JSON.parse(document.getElementById("page-mode").textContent);
+    const username = JSON.parse(document.getElementById("page-username").textContent);
+    const container = document.getElementById("people");
+
+    function load(url, emptyText) {
+      container.replaceChildren();
+      document.querySelectorAll("#people + button").forEach((b) => b.remove());
+      return Piu.paginatedList(container, url, Piu.personRow, emptyText);
+    }
+
+    if (Piu.token()) {
+      if (mode === "search") {
+        load("/users/", "Ninguém por aqui ainda.");
+        let timer;
+        document.getElementById("search").addEventListener("input", (event) => {
+          clearTimeout(timer);
+          timer = setTimeout(() => load(`/users/?search=${encodeURIComponent(event.target.value)}`, "Ninguém encontrado."), 300);
+        });
+        document.getElementById("search-form").addEventListener("submit", (event) => event.preventDefault());
+      } else {
+        const path = mode === "followers" ? "followers" : "following";
+        const empty = mode === "followers" ? "Ainda sem seguidores." : "Ainda não segue ninguém.";
+        load(`/users/${encodeURIComponent(username)}/${path}/`, empty);
+      }
+    }
+  </script>
+{% endblock %}

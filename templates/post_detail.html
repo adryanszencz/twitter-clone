@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Post{% endblock %}
+{% block content %}
+  <p class="muted" style="margin-bottom:12px"><a href="/">← voltar ao feed</a></p>
+  <section id="post"></section>
+  <form class="card" id="comment-form">
+    <label for="comment">Comentar</label>
+    <textarea id="comment" maxlength="280" placeholder="Escreva um comentário" required></textarea>
+    <div class="compose-footer"><button class="btn" type="submit">Comentar</button></div>
+    <p class="error" id="error"></p>
+  </form>
+  <h2 class="page-title">Comentários</h2>
+  <section id="comments"></section>
+{% endblock %}
+{% block script %}
+  <script>
+    const postId = {{ post_id }};
+    const { el, api, avatar } = Piu;
+    const me = Piu.currentUser();
+
+    function commentCard(comment) {
+      const author = comment.author;
+      const card = el("div", { class: "card post" },
+        el("a", { href: `/u/${author.username}/` }, avatar(author)),
+        el("div", { class: "post-body" },
+          el("div", { class: "post-head" },
+            el("strong", {}, author.display_name),
+            el("span", { class: "muted" }, `@${author.username}`),
+          ),
+          el("p", { class: "post-content" }, comment.content),
+          me && me.username === author.username
+            ? el("button", { class: "action", onclick: async () => {
+                await api(`/comments/${comment.id}/`, { method: "DELETE" });
+                card.remove();
+              } }, "🗑 Apagar")
+            : null,
+        ),
+      );
+      return card;
+    }
+
+    if (Piu.token()) {
+      api(`/posts/${postId}/`)
+        .then((post) => document.getElementById("post").append(Piu.postCard(post, { onDelete: () => { window.location.href = "/"; } })))
+        .catch(() => document.getElementById("post").append(el("p", { class: "card empty" }, "Post não encontrado.")));
+      Piu.paginatedList(document.getElementById("comments"), `/posts/${postId}/comments/`, commentCard, "Nenhum comentário ainda.");
+    }
+
+    document.getElementById("comment-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const textarea = document.getElementById("comment");
+      try {
+        const comment = await api(`/posts/${postId}/comments/`, { method: "POST", body: { content: textarea.value } });
+        textarea.value = "";
+        document.getElementById("error").textContent = "";
+        document.querySelector("#comments .empty")?.remove();
+        document.getElementById("comments").append(commentCard(comment));
+      } catch (error) {
+        document.getElementById("error").textContent = error.message;
+      }
+    });
+  </script>
+{% endblock %}
